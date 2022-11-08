@@ -3,6 +3,7 @@ import websockets
 import json
 
 groups = ["A", "B", "C", "D", "E", "F", "G", "H"]
+# Bla
 
 
 async def worldCupPredict(websocket):
