@@ -1,0 +1,169 @@
+[
+  {
+    "time": "Catar",
+    "grupo": "A",
+    "forca": 7.01
+  },
+  {
+    "time": "Equador",
+    "grupo": "A",
+    "forca": 6.79
+  },
+  {
+    "time": "Senegal",
+    "grupo": "A",
+    "forca": 6.99
+  },
+  {
+    "time": "Holanda",
+    "grupo": "A",
+    "forca": 7.24
+  },
+
+  {
+    "time": "Inglaterra",
+    "grupo": "B",
+    "forca": 7.32
+  },
+  {
+    "time": "Irã",
+    "grupo": "B",
+    "forca": 6.77
+  },
+  {
+    "time": "Estados Unidos",
+    "grupo": "B",
+    "forca": 7.03
+  },
+  {
+    "time": "País de Gales",
+    "grupo": "B",
+    "forca": 6.96
+  },
+
+  {
+    "time": "Argentina",
+    "grupo": "C",
+    "forca": 6.98
+  },
+  {
+    "time": "Arábia Saudita",
+    "grupo": "C",
+    "forca": 6.66
+  },
+  {
+    "time": "México",
+    "grupo": "C",
+    "forca": 7.10
+  },
+  {
+    "time": "Polônia",
+    "grupo": "C",
+    "forca": 7.02
+  },
+
+  {
+    "time": "França",
+    "grupo": "D",
+    "forca": 7.10
+  },
+  {
+    "time": "Austrália",
+    "grupo": "D",
+    "forca": 6.86
+  },
+  {
+    "time": "Dinamarca",
+    "grupo": "D",
+    "forca": 7.10
+  },
+  {
+    "time": "Tunísia",
+    "grupo": "D",
+    "forca": 6.82
+  },
+
+  {
+    "time": "Costa Rica",
+    "grupo": "E",
+    "forca": 7.01
+  },
+  {
+    "time": "Alemanha",
+    "grupo": "E",
+    "forca": 7.31
+  },
+  {
+    "time": "Japão",
+    "grupo": "E",
+    "forca": 6.60
+  },
+  {
+    "time": "Espanha",
+    "grupo": "E",
+    "forca": 7.00
+  },
+
+  {
+    "time": "Bélgica",
+    "grupo": "F",
+    "forca": 7.18
+  },
+  {
+    "time": "Canadá",
+    "grupo": "F",
+    "forca": 6.95
+  },
+  {
+    "time": "Marrocos",
+    "grupo": "F",
+    "forca": 6.94
+  },
+  {
+    "time": "Croácia",
+    "grupo": "F",
+    "forca": 7.11
+  },
+
+  {
+    "time": "Brasil",
+    "grupo": "G",
+    "forca": 7.15
+  },
+  {
+    "time": "Sérvia",
+    "grupo": "G",
+    "forca": 7.03
+  },
+  {
+    "time": "Suíça",
+    "grupo": "G",
+    "forca": 7.03
+  },
+  {
+    "time": "Camarões",
+    "grupo": "G",
+    "forca": 6.92
+  },
+
+  {
+    "time": "Portugal",
+    "grupo": "H",
+    "forca": 7.06
+  },
+  {
+    "time": "Gana",
+    "grupo": "H",
+    "forca": 6.67
+  },
+  {
+    "time": "Uruguai",
+    "grupo": "H",
+    "forca": 6.83
+  },
+  {
+    "time": "Coreia do Sul",
+    "grupo": "H",
+    "forca": 6.79
+  }
+]
