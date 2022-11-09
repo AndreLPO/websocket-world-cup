@@ -32,44 +32,57 @@ async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
     }
     for i in range(0, 4, 2):
         x = i
-        print("Partida %s" % str(partida))
+        # print("Partida %s" % str(partida))
         resultadoDaPartida = await jogarPartida(timesDoGrupo[x:x+2])
         resultadoDaRodada["resultados"].append(resultadoDaPartida)
         partida += 1
-    print(resultadoDaRodada)
+    # print(resultadoDaRodada)
     await websocket.send(json.dumps(resultadoDaRodada))
     partidasJogadas.append(resultadoDaRodada["resultados"])
+    timesOrdenadosParaNovaRodada = defineAsPartidasDaRodada(
+        timesDoGrupo, rodada)
     if (rodada < 3):
-        await faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket)
+
+        await faseDeGrupos(grupo, timesOrdenadosParaNovaRodada, partidasJogadas, websocket)
 
 
-def verificaSeOsTimesJaJogaram(times, partidasJogadas):
-    print("bla")
+def defineChaveParaOrdenacao(e):
+    return e['time']
+
+
+def defineAsPartidasDaRodada(times, rodada):
+    times.sort(key=defineChaveParaOrdenacao)
+    ordem = [0, 1, 2, 3]
+    if rodada == 2:
+        ordem = [0, 2, 1, 3]
+    elif rodada == 3:
+        ordem = [0, 3, 2, 1]
+    return [times[i] for i in ordem]
 
 
 async def jogarPartida(timesDaPartida):
-    resultadosDosJogos = []
+    resultadosDaPartidaPorTime = []
     for j in timesDaPartida:
         golsDoTime = (j['forca'] / 10) * random.randint(0, 6)
-        resultadosDosJogos.append({
+        resultadosDaPartidaPorTime.append({
             "time": j['time'],
             "gols": int(golsDoTime),
             "pontos": 0
         })
 
-    if (resultadosDosJogos[0]['gols'] > resultadosDosJogos[1]['gols']):
-        resultadosDosJogos[0]['pontos'] = 3
+    if (resultadosDaPartidaPorTime[0]['gols'] > resultadosDaPartidaPorTime[1]['gols']):
+        resultadosDaPartidaPorTime[0]['pontos'] = 3
 
-    if (resultadosDosJogos[0]['gols'] == resultadosDosJogos[1]['gols']):
-        resultadosDosJogos[0]['pontos'] = 1
+    if (resultadosDaPartidaPorTime[0]['gols'] == resultadosDaPartidaPorTime[1]['gols']):
+        resultadosDaPartidaPorTime[0]['pontos'] = 1
 
-    if (resultadosDosJogos[1]['gols'] > resultadosDosJogos[0]['gols']):
-        resultadosDosJogos[1]['pontos'] = 3
+    if (resultadosDaPartidaPorTime[1]['gols'] > resultadosDaPartidaPorTime[0]['gols']):
+        resultadosDaPartidaPorTime[1]['pontos'] = 3
 
-    if (resultadosDosJogos[1]['gols'] == resultadosDosJogos[0]['gols']):
-        resultadosDosJogos[1]['pontos'] = 1
+    if (resultadosDaPartidaPorTime[1]['gols'] == resultadosDaPartidaPorTime[0]['gols']):
+        resultadosDaPartidaPorTime[1]['pontos'] = 1
 
-    return resultadosDosJogos
+    return resultadosDaPartidaPorTime
 
 
 async def main():
