@@ -41,9 +41,14 @@ async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
     partidasJogadas.append(resultadoDaRodada["resultados"])
     timesOrdenadosParaNovaRodada = defineAsPartidasDaRodada(
         timesDoGrupo, rodada)
-    if (rodada < 3):
+    if(rodada == 3): classificacaoFinalDaFaseDeGrupos(grupo, partidasJogadas)
 
+    if (rodada < 3):
         await faseDeGrupos(grupo, timesOrdenadosParaNovaRodada, partidasJogadas, websocket)
+
+def classificacaoFinalDaFaseDeGrupos(grupo, partidas):
+    # TODO https://stackoverflow.com/questions/47055259/python-dict-group-and-sum-multiple-values
+    print({"grupo": grupo, "classificação": partidas})
 
 
 def defineChaveParaOrdenacao(e):
