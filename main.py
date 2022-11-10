@@ -87,7 +87,7 @@ async def jogarPartida(timesDaPartida):
 
 async def main():
     port = 6000
-    async with websockets.serve(previsaoDaCopa, "localhost", port):
+    async with websockets.serve(previsaoDaCopa, "0.0.0.0", port):
         print(f'Servidor iniciado na porta {port}, aguardando times')
         await asyncio.Future()  # run forever
 
