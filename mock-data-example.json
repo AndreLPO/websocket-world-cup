@@ -2,168 +2,200 @@
   {
     "time": "Catar",
     "grupo": "A",
-    "forca": 7.01
+    "forca": 7.01,
+    "fifa": 1439.89
   },
   {
     "time": "Equador",
     "grupo": "A",
-    "forca": 6.79
+    "forca": 6.79,
+    "fifa": 1464.39
   },
   {
     "time": "Senegal",
     "grupo": "A",
-    "forca": 6.99
+    "forca": 6.99,
+    "fifa": 1584.38
   },
   {
     "time": "Holanda",
     "grupo": "A",
-    "forca": 7.24
+    "forca": 7.24,
+    "fifa": 1694.51
   },
 
   {
     "time": "Inglaterra",
     "grupo": "B",
-    "forca": 7.32
+    "forca": 7.32,
+    "fifa": 1728.47
   },
   {
     "time": "Irã",
     "grupo": "B",
-    "forca": 6.77
+    "forca": 6.77,
+    "fifa": 1564.61
   },
   {
     "time": "Estados Unidos",
     "grupo": "B",
-    "forca": 7.03
+    "forca": 7.03,
+    "fifa": 1627.48
   },
   {
     "time": "País de Gales",
     "grupo": "B",
-    "forca": 6.96
+    "forca": 6.96,
+    "fifa": 1569.82
   },
 
   {
     "time": "Argentina",
     "grupo": "C",
-    "forca": 6.98
+    "forca": 6.98,
+    "fifa": 1773.88
   },
   {
     "time": "Arábia Saudita",
     "grupo": "C",
-    "forca": 6.66
+    "forca": 6.66,
+    "fifa": 1437.78
   },
   {
     "time": "México",
     "grupo": "C",
-    "forca": 7.10
+    "forca": 7.10,
+    "fifa": 1644.89
   },
   {
     "time": "Polônia",
     "grupo": "C",
-    "forca": 7.02
+    "forca": 7.02,
+    "fifa": 1548.59
   },
 
   {
     "time": "França",
     "grupo": "D",
-    "forca": 7.10
+    "forca": 7.10,
+    "fifa": 1759.78
   },
   {
     "time": "Austrália",
     "grupo": "D",
-    "forca": 6.86
+    "forca": 6.86,
+    "fifa": 1488.72
   },
   {
     "time": "Dinamarca",
     "grupo": "D",
-    "forca": 7.10
+    "forca": 7.10,
+    "fifa": 1666.57
   },
   {
     "time": "Tunísia",
     "grupo": "D",
-    "forca": 6.82
+    "forca": 6.82,
+    "fifa": 1507.54
   },
 
   {
     "time": "Costa Rica",
     "grupo": "E",
-    "forca": 7.01
+    "forca": 7.01,
+    "fifa": 1503.59
   },
   {
     "time": "Alemanha",
     "grupo": "E",
-    "forca": 7.31
+    "forca": 7.31,
+    "fifa": 1650.21
   },
   {
     "time": "Japão",
     "grupo": "E",
-    "forca": 6.60
+    "forca": 6.60,
+    "fifa": 1559.54
   },
   {
     "time": "Espanha",
     "grupo": "E",
-    "forca": 7.00
+    "forca": 7.00,
+    "fifa": 1715.22
   },
 
   {
     "time": "Bélgica",
     "grupo": "F",
-    "forca": 7.18
+    "forca": 7.18,
+    "fifa": 1816.71
   },
   {
     "time": "Canadá",
     "grupo": "F",
-    "forca": 6.95
+    "forca": 6.95,
+    "fifa": 1475
   },
   {
     "time": "Marrocos",
     "grupo": "F",
-    "forca": 6.94
+    "forca": 6.94,
+    "fifa": 1563.5
   },
   {
     "time": "Croácia",
     "grupo": "F",
-    "forca": 7.11
+    "forca": 7.11,
+    "fifa": 1645.64
   },
 
   {
     "time": "Brasil",
     "grupo": "G",
-    "forca": 7.15
+    "forca": 7.15,
+    "fifa": 1841.3
   },
   {
     "time": "Sérvia",
     "grupo": "G",
-    "forca": 7.03
+    "forca": 7.03,
+    "fifa": 1563.62
   },
   {
     "time": "Suíça",
     "grupo": "G",
-    "forca": 7.03
+    "forca": 7.03,
+    "fifa": 1635.92
   },
   {
     "time": "Camarões",
     "grupo": "G",
-    "forca": 6.92
+    "forca": 6.92,
+    "fifa": 1471.44
   },
 
   {
     "time": "Portugal",
     "grupo": "H",
-    "forca": 7.06
+    "forca": 7.06,
+    "fifa": 1676.56
   },
   {
     "time": "Gana",
     "grupo": "H",
-    "forca": 6.67
+    "forca": 6.67,
+    "fifa": 1393
   },
   {
     "time": "Uruguai",
     "grupo": "H",
-    "forca": 6.83
+    "forca": 6.83,
+    "fifa": 1638.71
   },
   {
     "time": "Coreia do Sul",
     "grupo": "H",
-    "forca": 6.79
+    "forca": 6.79,
+    "fifa": 1530.3
   }
 ]
