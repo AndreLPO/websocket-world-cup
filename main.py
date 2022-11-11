@@ -1,9 +1,10 @@
 import asyncio
 import json
+import math
 import random
+
 import pandas
 import websockets
-import math
 
 grupos = ["A", "B", "C", "D", "E", "F", "G", "H"]
 
@@ -32,6 +33,7 @@ async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
     }
     for i in range(0, 4, 2):
         x = i
+
         # print("Partida %s" % str(partida))
         resultadoDaPartida = await jogarPartida(timesDoGrupo[x:x+2])
         resultadoDaRodada["resultados"].append(resultadoDaPartida)
@@ -50,11 +52,10 @@ async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
 
 
 def defineChaveParaOrdenacaoDaClassificacao(e):
-    return e['pontos']
+    return e['pontos'], e['gols']
 
 
 async def classificacaoFinalDaFaseDeGrupos(grupo, partidas, websocket):
-    # TODO https://stackoverflow.com/questions/47055259/python-dict-group-and-sum-multiple-values
     classificacao = []
     for p in partidas:
         for t in p:
@@ -66,6 +67,7 @@ async def classificacaoFinalDaFaseDeGrupos(grupo, partidas, websocket):
     d = g.to_dict('records')
     d.sort(
         reverse=True, key=defineChaveParaOrdenacaoDaClassificacao)
+    
     await websocket.send(json.dumps({"grupo": grupo, "classificacao": d, "classificados": d[0:2]}, ensure_ascii=False))
 
 
@@ -85,9 +87,14 @@ def defineAsPartidasDaRodada(times, rodada):
 
 async def jogarPartida(timesDaPartida):
     resultadosDaPartidaPorTime = []
+
     for j in timesDaPartida:
-        golsDoTime = ((j['forca'] * j['fifa']) / 10000) * \
-            random.randint(0, 6)
+        timeAdiversario = list(filter(lambda ta: ta['time'] != j['time'], timesDaPartida))[0]
+        mediaDaForcaAdversario = (timeAdiversario['fifa']*timeAdiversario['forca'])/2
+        mediaDaForca = (j['fifa']*j['forca'])/2
+
+        chanceDeVitoriaEmPorcentagem = (mediaDaForca * 100) / (mediaDaForca + mediaDaForcaAdversario)
+        golsDoTime = (mediaDaForca/1000 * random.uniform(0, chanceDeVitoriaEmPorcentagem))/100
         resultadosDaPartidaPorTime.append({
             "time": j['time'],
             "gols": math.floor(golsDoTime) if (golsDoTime % 2 <= 0.5) else math.ceil(golsDoTime),

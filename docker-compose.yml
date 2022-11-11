@@ -5,3 +5,5 @@ services:
     image: worldcup-websocket
     ports:
       - "6000:6000"
+    volumes:
+      - ./:/app
