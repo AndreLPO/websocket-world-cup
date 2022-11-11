@@ -7,12 +7,14 @@ import pandas
 import websockets
 
 grupos = ["A", "B", "C", "D", "E", "F", "G", "H"]
+classificacaoGeral = []
 
 
 async def previsaoDaCopa(websocket):
     async for message in websocket:
         todosOsGrupos = json.loads(message)
         await partidasPorGrupo(todosOsGrupos, 0, websocket)
+        print(classificacaoGeral)
 
 
 async def partidasPorGrupo(teams, groupIndex, websocket):
@@ -68,7 +70,9 @@ async def classificacaoFinalDaFaseDeGrupos(grupo, partidas, websocket):
     d.sort(
         reverse=True, key=defineChaveParaOrdenacaoDaClassificacao)
     
-    await websocket.send(json.dumps({"grupo": grupo, "classificacao": d, "classificados": d[0:2]}, ensure_ascii=False))
+    resultadoFinalDoGrupo = {"grupo": grupo, "classificacao": d, "classificados": d[0:2]}
+    classificacaoGeral.append(resultadoFinalDoGrupo)
+    await websocket.send(json.dumps(resultadoFinalDoGrupo , ensure_ascii=False))
 
 
 def defineChaveParaOrdenacaoDasRodadas(e):
@@ -123,3 +127,7 @@ async def main():
         await asyncio.Future()  # run forever
 
 asyncio.run(main())
+
+
+# for i in range(0, len(grupos)-1,2):
+# ...     print(f"Grupo {grupos[i]} x Grupo {grupos[i+1]}")
