@@ -3,9 +3,9 @@ import json
 import random
 import pandas
 import websockets
+import math
 
 grupos = ["A", "B", "C", "D", "E", "F", "G", "H"]
-# Bla
 
 
 async def previsaoDaCopa(websocket):
@@ -86,11 +86,11 @@ def defineAsPartidasDaRodada(times, rodada):
 async def jogarPartida(timesDaPartida):
     resultadosDaPartidaPorTime = []
     for j in timesDaPartida:
-        golsDoTime = ((j['forca']*3) + (j['fifa']*2) + (random.randint(0, 6))) / \
-            (j['forca'] + 3 + j['fifa'] + 2 + random.randint(0, 6) + 1)
+        golsDoTime = ((j['forca'] * j['fifa']) / 10000) * \
+            random.randint(0, 6)
         resultadosDaPartidaPorTime.append({
             "time": j['time'],
-            "gols": int(golsDoTime),
+            "gols": math.floor(golsDoTime) if (golsDoTime % 2 <= 0.5) else math.ceil(golsDoTime),
             "pontos": 0
         })
 
