@@ -14,7 +14,7 @@ async def previsaoDaCopa(websocket):
     async for message in websocket:
         todosOsGrupos = json.loads(message)
         await partidasPorGrupo(todosOsGrupos, 0, websocket)
-        await websocket.send(json.dumps(classificacaoGeral , ensure_ascii=False))
+        await websocket.send(json.dumps(classificacaoGeral, ensure_ascii=False))
 
 
 async def partidasPorGrupo(teams, groupIndex, websocket):
@@ -65,14 +65,16 @@ async def classificacaoFinalDaFaseDeGrupos(grupo, partidas, websocket):
                 classificacao.append(c)
 
     df = pandas.DataFrame(classificacao)
-    g = df.groupby(['time', 'fifa', 'forca'], as_index=False)['gols','pontos'].sum(numeric_only=False)
+    g = df.groupby(['time', 'fifa', 'forca'], as_index=False)[
+        'gols', 'pontos'].sum(numeric_only=False)
     d = g.to_dict('records')
     d.sort(
         reverse=True, key=defineChaveParaOrdenacaoDaClassificacao)
-    
-    resultadoFinalDoGrupo = {"grupo": grupo, "classificacao": d, "classificados": d[0:2]}
+
+    resultadoFinalDoGrupo = {"grupo": grupo,
+                             "classificacao": d, "classificados": d[0:2]}
     classificacaoGeral.append(resultadoFinalDoGrupo)
-    await websocket.send(json.dumps(resultadoFinalDoGrupo , ensure_ascii=False))
+    await websocket.send(json.dumps(resultadoFinalDoGrupo, ensure_ascii=False))
 
 
 def defineChaveParaOrdenacaoDasRodadas(e):
@@ -93,12 +95,16 @@ async def jogarPartida(timesDaPartida):
     resultadosDaPartidaPorTime = []
 
     for j in timesDaPartida:
-        timeAdiversario = list(filter(lambda ta: ta['time'] != j['time'], timesDaPartida))[0]
-        mediaDaForcaAdversario = (timeAdiversario['fifa']*timeAdiversario['forca'])/2
+        timeAdiversario = list(
+            filter(lambda ta: ta['time'] != j['time'], timesDaPartida))[0]
+        mediaDaForcaAdversario = (
+            timeAdiversario['fifa']*timeAdiversario['forca'])/2
         mediaDaForca = (j['fifa']*j['forca'])/2
 
-        chanceDeVitoriaEmPorcentagem = (mediaDaForca * 100) / (mediaDaForca + mediaDaForcaAdversario)
-        golsDoTime = (mediaDaForca/1000 * random.uniform(0, chanceDeVitoriaEmPorcentagem))/100
+        chanceDeVitoriaEmPorcentagem = (
+            mediaDaForca * 100) / (mediaDaForca + mediaDaForcaAdversario)
+        golsDoTime = (mediaDaForca/1000 * random.uniform(0,
+                      chanceDeVitoriaEmPorcentagem))/100
         resultadosDaPartidaPorTime.append({
             **j,
             "gols": math.floor(golsDoTime) if (golsDoTime % 2 <= 0.5) else math.ceil(golsDoTime),
@@ -129,5 +135,12 @@ async def main():
 asyncio.run(main())
 
 
-# for i in range(0, len(grupos)-1,2):
-# ...     print(f"Grupo {grupos[i]} x Grupo {grupos[i+1]}")
+# def criaChaveamento(ladoChaveA, ladoChaveB):
+#       for i in range(0, len(grupos)-1,2):
+#     print(f"{grupos[i + ladoChaveA]}{classificados[0]} x {grupos[i+ladoChaveB]}{classificados[1]}")
+#     primeiroClassificadoDoGrupo = list(filter(lambda primeiro: primeiro['grupo'] == grupos[i + ladoChaveA], classificacaoGeral))[0]
+#     print(primeiroClassificadoDoGrupo['grupo'], primeiroClassificadoDoGrupo['classificados'][0])
+#     segundoClassificadoDoOutroGrupo = list(filter(lambda segundo: segundo['grupo'] == grupos[i + ladoChaveB], classificacaoGeral))[0]
+#     print(segundoClassificadoDoOutroGrupo['grupo'],segundoClassificadoDoOutroGrupo['classificados'][1])
+#   if(ladoChaveA < 1):
+#     criaChaveamento(ladoChaveA + 1, ladoChaveB - 1)
