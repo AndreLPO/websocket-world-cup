@@ -14,7 +14,7 @@ async def previsaoDaCopa(websocket):
     async for message in websocket:
         todosOsGrupos = json.loads(message)
         await partidasPorGrupo(todosOsGrupos, 0, websocket)
-        print(classificacaoGeral)
+        await websocket.send(json.dumps(classificacaoGeral , ensure_ascii=False))
 
 
 async def partidasPorGrupo(teams, groupIndex, websocket):
@@ -65,7 +65,7 @@ async def classificacaoFinalDaFaseDeGrupos(grupo, partidas, websocket):
                 classificacao.append(c)
 
     df = pandas.DataFrame(classificacao)
-    g = df.groupby('time', as_index=False).sum()
+    g = df.groupby(['time', 'fifa', 'forca'], as_index=False)['gols','pontos'].sum(numeric_only=False)
     d = g.to_dict('records')
     d.sort(
         reverse=True, key=defineChaveParaOrdenacaoDaClassificacao)
@@ -100,7 +100,7 @@ async def jogarPartida(timesDaPartida):
         chanceDeVitoriaEmPorcentagem = (mediaDaForca * 100) / (mediaDaForca + mediaDaForcaAdversario)
         golsDoTime = (mediaDaForca/1000 * random.uniform(0, chanceDeVitoriaEmPorcentagem))/100
         resultadosDaPartidaPorTime.append({
-            "time": j['time'],
+            **j,
             "gols": math.floor(golsDoTime) if (golsDoTime % 2 <= 0.5) else math.ceil(golsDoTime),
             "pontos": 0
         })
