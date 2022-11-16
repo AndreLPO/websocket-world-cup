@@ -18,6 +18,8 @@ async def previsaoDaCopa(websocket):
         chaveamento.clear()
         todosOsGrupos = json.loads(message)
         await partidasPorGrupo(todosOsGrupos, 0, websocket)
+        print("Classificação Geral")
+        print(classificacaoGeral)
         criaChaveamento(0,1,classificados=classificacaoGeral)
         mataMata(chaveamento, 0)
 
@@ -32,23 +34,25 @@ async def partidasPorGrupo(teams, groupIndex, websocket):
 async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
     rodada = len(partidasJogadas) + 1
     await websocket.send(f"Rodada {rodada}")
+    print(f"Rodada {rodada} do grupo {grupo}")
     partida = 1
     resultadoDaRodada = {
         "grupo": grupo,
         "resultados": []
     }
+    timesOrdenadosParaNovaRodada = defineAsPartidasDaRodada(
+        timesDoGrupo, rodada)
     for i in range(0, 4, 2):
         x = i
-
-        # print("Partida %s" % str(partida))
-        resultadoDaPartida = jogarPartida(timesDoGrupo[x:x+2])
+        print('-'*20)
+        print(f"{timesOrdenadosParaNovaRodada[x]['time']} x {timesOrdenadosParaNovaRodada[x+1]['time']}")
+        resultadoDaPartida = jogarPartida(timesOrdenadosParaNovaRodada[x:x+2])
         resultadoDaRodada["resultados"].append(resultadoDaPartida)
         partida += 1
     # print(resultadoDaRodada)
     await websocket.send(json.dumps(resultadoDaRodada, ensure_ascii=False))
     partidasJogadas.append(resultadoDaRodada["resultados"])
-    timesOrdenadosParaNovaRodada = defineAsPartidasDaRodada(
-        timesDoGrupo, rodada)
+    
     if (rodada == 3):
         await websocket.send(f"Fim da fase de grupos! Resultados do Grupo: {grupo}")
         await classificacaoFinalDaFaseDeGrupos(grupo, partidasJogadas, websocket)
@@ -105,12 +109,13 @@ def criaChaveamento(ladoChaveA, ladoChaveB, classificados):
 
 def mataMata(timesClassificados, indiceFase):
     vencedores = []
-    print(fases[indiceFase])
+    print('-'*20)
+    print(f'Chaveamento da {fases[indiceFase]}')
+    print(timesClassificados)
+    print('-'*20)
     for i in range(0, len(timesClassificados), 2):
         print(f"{timesClassificados[i]['time']} x {timesClassificados[i+1]['time']}")
         partida = jogarPartida(timesClassificados[i:i+2])
-        print(f"Fim de jogo!")
-        print(partida)
         vencedor = defineOVencedorDaPartida(partida)
         vencedores.append(vencedor)
 
@@ -119,14 +124,14 @@ def mataMata(timesClassificados, indiceFase):
     if(fases[indiceFase] == "Final"):
         print('🌟'*20)
         print("TEMOS NOSSO CAMPEÃO!!!!")
-        print(vencedor['time'])
+        print(f"{'🏆' * 8} {vencedor['time']} {'🏆' * 8}")
         print('🌟'*20)
 
 def defineOVencedorDaPartida(resultado):
     vencedor = next((sub for sub in resultado if sub['pontos'] == 3), None)
     empates = list(filter(lambda t: t['pontos'] == 1, resultado))
     if(len(empates) > 0):
-        print("Vamos para as penalidades máximas!")
+        print("Vamos para as penalidades máximas! 🥅")
         vencedor = cobrancasDePenaltis(empates)
 
     return vencedor
@@ -142,11 +147,12 @@ def cobrancasDePenaltis(times):
     }
     for p in range(0,5):
         batePenalti(times, batidasConvertidas)
-    print(batidasConvertidas)
+    print(f"{times[0]['time']} {'⚽' * batidasConvertidas[times[0]['time']]} - {times[1]['time']} {'⚽' * batidasConvertidas[times[1]['time']]}")
     while(batidasConvertidas[times[0]['time']] == batidasConvertidas[times[1]['time']]):
         print("Vamos para as cobranças alternadas!!")
         batePenalti(times, batidasConvertidas)
-        print(batidasConvertidas)
+        print(f"{times[0]['time']} {'⚽' * batidasConvertidas[times[0]['time']]} - {times[1]['time']} {'⚽' * batidasConvertidas[times[1]['time']]}")
+
     
     vencedor = times[0] if (batidasConvertidas[times[0]['time']] > batidasConvertidas[times[1]['time']]) else times[1]
     return vencedor
@@ -161,10 +167,10 @@ def batePenalti(times, batidasConvertidas):
         chuteDoAtacante = chanceDeMarcarOGol * random.randint(1,6)
         defesaDoGoleiro = chanceDeDefenderOPenalti * random.randint(1,6)
         if(chuteDoAtacante > defesaDoGoleiro):
-            print(f"Gooool!! [{p['time']}]")
+            print(f"Gooool!! [{p['time']}] ⚽")
             batidasConvertidas[p['time']] += 1
         else:
-            print(f"Defendeu!! [{timeAdiversario['time']}]")
+            print(f"Defendeu!! [{timeAdiversario['time']}] 🧤❌")
 
        
 
@@ -198,7 +204,9 @@ def jogarPartida(timesDaPartida):
 
     if (resultadosDaPartidaPorTime[1]['gols'] == resultadosDaPartidaPorTime[0]['gols']):
         resultadosDaPartidaPorTime[1]['pontos'] = 1
-
+    print(f"Fim de jogo!")
+    print(f"{resultadosDaPartidaPorTime[0]['time']} {resultadosDaPartidaPorTime[0]['gols']} - {resultadosDaPartidaPorTime[1]['gols']} {resultadosDaPartidaPorTime[1]['time']}")
+    print('-'*20)
     return resultadosDaPartidaPorTime
 
 
