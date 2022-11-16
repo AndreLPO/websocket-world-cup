@@ -21,7 +21,7 @@ async def previsaoDaCopa(websocket):
         print("Classificação Geral")
         print(classificacaoGeral)
         criaChaveamento(0,1,classificados=classificacaoGeral)
-        mataMata(chaveamento, 0)
+        await mataMata(chaveamento, 0, websocket)
 
 async def partidasPorGrupo(teams, groupIndex, websocket):
     timesNoGrupo = list(
@@ -49,7 +49,6 @@ async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
         resultadoDaPartida = jogarPartida(timesOrdenadosParaNovaRodada[x:x+2])
         resultadoDaRodada["resultados"].append(resultadoDaPartida)
         partida += 1
-    # print(resultadoDaRodada)
     await websocket.send(json.dumps(resultadoDaRodada, ensure_ascii=False))
     partidasJogadas.append(resultadoDaRodada["resultados"])
     
@@ -107,8 +106,10 @@ def criaChaveamento(ladoChaveA, ladoChaveB, classificados):
     if(ladoChaveA < 1):
         criaChaveamento(ladoChaveA + 1, ladoChaveB - 1, classificados)
 
-def mataMata(timesClassificados, indiceFase):
+async def mataMata(timesClassificados, indiceFase, websocket):
     vencedores = []
+    await websocket.send(f'Chaveamento da {fases[indiceFase]}')
+    await websocket.send(json.dumps(timesClassificados, ensure_ascii=False))
     print('-'*20)
     print(f'Chaveamento da {fases[indiceFase]}')
     print(timesClassificados)
@@ -116,16 +117,19 @@ def mataMata(timesClassificados, indiceFase):
     for i in range(0, len(timesClassificados), 2):
         print(f"{timesClassificados[i]['time']} x {timesClassificados[i+1]['time']}")
         partida = jogarPartida(timesClassificados[i:i+2])
+        await websocket.send(json.dumps(partida, ensure_ascii=False))
+
         vencedor = defineOVencedorDaPartida(partida)
         vencedores.append(vencedor)
 
     if(indiceFase < len(fases) - 1):
-        mataMata(vencedores, indiceFase+1)
+        await mataMata(vencedores, indiceFase+1, websocket)
     if(fases[indiceFase] == "Final"):
         print('🌟'*20)
         print("TEMOS NOSSO CAMPEÃO!!!!")
         print(f"{'🏆' * 8} {vencedor['time']} {'🏆' * 8}")
         print('🌟'*20)
+        await websocket.send(json.dumps(f"{'🏆' * 8} {vencedor['time']} {'🏆' * 8}", ensure_ascii=False))
 
 def defineOVencedorDaPartida(resultado):
     vencedor = next((sub for sub in resultado if sub['pontos'] == 3), None)
