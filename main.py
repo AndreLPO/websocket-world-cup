@@ -7,15 +7,19 @@ import pandas
 import websockets
 
 grupos = ["A", "B", "C", "D", "E", "F", "G", "H"]
+fases = ['Oitavas', 'Quartas', 'Semi', 'Final']
 classificacaoGeral = []
+chaveamento = []
 
 
 async def previsaoDaCopa(websocket):
     async for message in websocket:
+        classificacaoGeral.clear()
+        chaveamento.clear()
         todosOsGrupos = json.loads(message)
         await partidasPorGrupo(todosOsGrupos, 0, websocket)
-        await websocket.send(json.dumps(classificacaoGeral, ensure_ascii=False))
-
+        criaChaveamento(0,1,classificados=classificacaoGeral)
+        mataMata(chaveamento, 0)
 
 async def partidasPorGrupo(teams, groupIndex, websocket):
     timesNoGrupo = list(
@@ -37,7 +41,7 @@ async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
         x = i
 
         # print("Partida %s" % str(partida))
-        resultadoDaPartida = await jogarPartida(timesDoGrupo[x:x+2])
+        resultadoDaPartida = jogarPartida(timesDoGrupo[x:x+2])
         resultadoDaRodada["resultados"].append(resultadoDaPartida)
         partida += 1
     # print(resultadoDaRodada)
@@ -65,8 +69,8 @@ async def classificacaoFinalDaFaseDeGrupos(grupo, partidas, websocket):
                 classificacao.append(c)
 
     df = pandas.DataFrame(classificacao)
-    g = df.groupby(['time', 'fifa', 'forca'], as_index=False)[
-        'gols', 'pontos'].sum(numeric_only=False)
+    g = df.groupby(['time', 'fifa', 'forca'], as_index=False)[[
+        'gols', 'pontos']].sum(numeric_only=False)
     d = g.to_dict('records')
     d.sort(
         reverse=True, key=defineChaveParaOrdenacaoDaClassificacao)
@@ -90,13 +94,85 @@ def defineAsPartidasDaRodada(times, rodada):
         ordem = [0, 3, 2, 1]
     return [times[i] for i in ordem]
 
+def criaChaveamento(ladoChaveA, ladoChaveB, classificados):
+    for i in range(0, len(grupos)-1,2):
+        primeiroClassificadoDoGrupo = list(filter(lambda primeiro: primeiro['grupo'] == grupos[i + ladoChaveA], classificacaoGeral))[0]['classificados'][0]
+        segundoClassificadoDoOutroGrupo = list(filter(lambda segundo: segundo['grupo'] == grupos[i + ladoChaveB], classificacaoGeral))[0]['classificados'][1]
+        chaveamento.append(primeiroClassificadoDoGrupo)
+        chaveamento.append(segundoClassificadoDoOutroGrupo)
+    if(ladoChaveA < 1):
+        criaChaveamento(ladoChaveA + 1, ladoChaveB - 1, classificados)
 
-async def jogarPartida(timesDaPartida):
+def mataMata(timesClassificados, indiceFase):
+    vencedores = []
+    print(fases[indiceFase])
+    for i in range(0, len(timesClassificados), 2):
+        print(f"{timesClassificados[i]['time']} x {timesClassificados[i+1]['time']}")
+        partida = jogarPartida(timesClassificados[i:i+2])
+        print(f"Fim de jogo!")
+        print(partida)
+        vencedor = defineOVencedorDaPartida(partida)
+        vencedores.append(vencedor)
+
+    if(indiceFase < len(fases) - 1):
+        mataMata(vencedores, indiceFase+1)
+    if(fases[indiceFase] == "Final"):
+        print('🌟'*20)
+        print("TEMOS NOSSO CAMPEÃO!!!!")
+        print(vencedor['time'])
+        print('🌟'*20)
+
+def defineOVencedorDaPartida(resultado):
+    vencedor = next((sub for sub in resultado if sub['pontos'] == 3), None)
+    empates = list(filter(lambda t: t['pontos'] == 1, resultado))
+    if(len(empates) > 0):
+        print("Vamos para as penalidades máximas!")
+        vencedor = cobrancasDePenaltis(empates)
+
+    return vencedor
+
+def encontraAdversario(timesDaPartida, time):
+    timeAdiversario = next((ta for ta in timesDaPartida if ta['time'] != time))
+    return timeAdiversario
+
+def cobrancasDePenaltis(times):
+    batidasConvertidas = {
+        times[0]['time']: 0,
+        times[1]['time']: 0,
+    }
+    for p in range(0,5):
+        batePenalti(times, batidasConvertidas)
+    print(batidasConvertidas)
+    while(batidasConvertidas[times[0]['time']] == batidasConvertidas[times[1]['time']]):
+        print("Vamos para as cobranças alternadas!!")
+        batePenalti(times, batidasConvertidas)
+        print(batidasConvertidas)
+    
+    vencedor = times[0] if (batidasConvertidas[times[0]['time']] > batidasConvertidas[times[1]['time']]) else times[1]
+    return vencedor
+
+def batePenalti(times, batidasConvertidas):
+    for p in times:
+        print(f"{p['time']} vai pra cobrança!")
+        timeAdiversario = encontraAdversario(times, p['time'])
+        chanceDeDefenderOPenalti = (
+            timeAdiversario['fifa']*timeAdiversario['forca'])/2
+        chanceDeMarcarOGol = (p['fifa']*p['forca'])/2
+        chuteDoAtacante = chanceDeMarcarOGol * random.randint(1,6)
+        defesaDoGoleiro = chanceDeDefenderOPenalti * random.randint(1,6)
+        if(chuteDoAtacante > defesaDoGoleiro):
+            print(f"Gooool!! [{p['time']}]")
+            batidasConvertidas[p['time']] += 1
+        else:
+            print(f"Defendeu!! [{timeAdiversario['time']}]")
+
+       
+
+def jogarPartida(timesDaPartida):
     resultadosDaPartidaPorTime = []
 
     for j in timesDaPartida:
-        timeAdiversario = list(
-            filter(lambda ta: ta['time'] != j['time'], timesDaPartida))[0]
+        timeAdiversario = encontraAdversario(timesDaPartida, j['time'])
         mediaDaForcaAdversario = (
             timeAdiversario['fifa']*timeAdiversario['forca'])/2
         mediaDaForca = (j['fifa']*j['forca'])/2
@@ -135,12 +211,4 @@ async def main():
 asyncio.run(main())
 
 
-# def criaChaveamento(ladoChaveA, ladoChaveB):
-#       for i in range(0, len(grupos)-1,2):
-#     print(f"{grupos[i + ladoChaveA]}{classificados[0]} x {grupos[i+ladoChaveB]}{classificados[1]}")
-#     primeiroClassificadoDoGrupo = list(filter(lambda primeiro: primeiro['grupo'] == grupos[i + ladoChaveA], classificacaoGeral))[0]
-#     print(primeiroClassificadoDoGrupo['grupo'], primeiroClassificadoDoGrupo['classificados'][0])
-#     segundoClassificadoDoOutroGrupo = list(filter(lambda segundo: segundo['grupo'] == grupos[i + ladoChaveB], classificacaoGeral))[0]
-#     print(segundoClassificadoDoOutroGrupo['grupo'],segundoClassificadoDoOutroGrupo['classificados'][1])
-#   if(ladoChaveA < 1):
-#     criaChaveamento(ladoChaveA + 1, ladoChaveB - 1)
+
