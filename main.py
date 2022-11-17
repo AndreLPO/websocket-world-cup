@@ -1,7 +1,10 @@
 import asyncio
 import json
 import math
+import pathlib
 import random
+import ssl
+import time
 
 import pandas
 import websockets
@@ -17,11 +20,14 @@ async def previsaoDaCopa(websocket):
         classificacaoGeral.clear()
         chaveamento.clear()
         todosOsGrupos = json.loads(message)
+        print(message)
+        print(todosOsGrupos)
         await partidasPorGrupo(todosOsGrupos, 0, websocket)
         print("Classificação Geral")
         print(classificacaoGeral)
         criaChaveamento(0,1,classificados=classificacaoGeral)
         await mataMata(chaveamento, 0, websocket)
+        await websocket.send("Ola")
 
 async def partidasPorGrupo(teams, groupIndex, websocket):
     timesNoGrupo = list(
@@ -33,7 +39,7 @@ async def partidasPorGrupo(teams, groupIndex, websocket):
 
 async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
     rodada = len(partidasJogadas) + 1
-    await websocket.send(f"Rodada {rodada}")
+    # await websocket.send(f"Rodada {rodada}")
     print(f"Rodada {rodada} do grupo {grupo}")
     partida = 1
     resultadoDaRodada = {
@@ -50,6 +56,7 @@ async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
         resultadoDaRodada["resultados"].append(resultadoDaPartida)
         partida += 1
     await websocket.send(json.dumps(resultadoDaRodada, ensure_ascii=False))
+
     partidasJogadas.append(resultadoDaRodada["resultados"])
     
     if (rodada == 3):
@@ -215,7 +222,10 @@ def jogarPartida(timesDaPartida):
 
 
 async def main():
-    port = 6000
+    port = 8081
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    localhost_pem = pathlib.Path(__file__).with_name("localhost.pem")
+    ssl_context.load_cert_chain(localhost_pem)
     async with websockets.serve(previsaoDaCopa, "0.0.0.0", port):
         print(f'Servidor iniciado na porta {port}, aguardando times')
         await asyncio.Future()  # run forever
