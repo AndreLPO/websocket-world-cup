@@ -44,6 +44,85 @@ async def partidasPorRodada(teams, groupIndex, websocket):
         await partidasPorRodada(teams, groupIndex + 1, websocket)
 
 
+# [
+#  {
+#   rodada: 1,
+#   partidas: [
+#     {
+#       grupo: A
+#       jogos: [
+#         [Qatar,Ecuador],
+#         [Senegal,Netherlands]
+#       ]
+#     },
+#     {
+#       grupo: B
+#       jogos: [
+#         England,Ecuador],
+#         [Senegal,Netherlands]
+#       ]
+#     },
+#   ]
+#  },
+#  {
+#   rodada: 2,
+#   partidas: [
+#     {
+#       grupo: A
+#       jogos: [
+#         [Qatar,Ecuador],
+#         [Senegal,Netherlands]
+#       ]
+#     },
+#     {
+#       grupo: B
+#       jogos: [
+#         England,Ecuador],
+#         [Senegal,Netherlands]
+#       ]
+#     },
+#   ]
+#  },
+#  {
+#   rodada: 3,
+#   partidas: [
+#     {
+#       grupo: A
+#       jogos: [
+#         [Qatar,Ecuador],
+#         [Senegal,Netherlands]
+#       ]
+#     },
+#     {
+#       grupo: B
+#       jogos: [
+#         England,Ecuador],
+#         [Senegal,Netherlands]
+#       ]
+#     },
+#   ]
+#  },
+#  {
+#   rodada: Oitavas,
+#   partidas: [
+#     {
+#       grupo: Oitavas
+#       jogos: [
+#         [Qatar,Ecuador],
+#         [Senegal,Netherlands]
+#         [Senegal,Netherlands]
+#         [Senegal,Netherlands]
+#         [Senegal,Netherlands]
+#         [Senegal,Netherlands]
+#         [Senegal,Netherlands]
+#         [Senegal,Netherlands]
+#       ]
+#     },
+#   ]
+#  },
+# ]
+
+
 async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
     rodada = len(partidasJogadas) + 1
     print(f"Rodada {rodada} do grupo {grupo}")
