@@ -19,7 +19,7 @@ async def previsaoDaCopa(websocket):
         classificacaoGeral.clear()
         chaveamento.clear()
         todosOsGrupos = json.loads(message)
-        await partidasPorGrupo(todosOsGrupos, 0, websocket)
+        await partidasPorRodada(todosOsGrupos, 0, websocket)
         await websocket.send(
             json.dumps(
                 {
@@ -34,14 +34,14 @@ async def previsaoDaCopa(websocket):
         await mataMata(chaveamento, 0, websocket)
 
 
-async def partidasPorGrupo(teams, groupIndex, websocket):
+async def partidasPorRodada(teams, groupIndex, websocket):
     timesNoGrupo = list(filter(lambda t: t["grupo"] == grupos[groupIndex], teams))
     await websocket.send(
         json.dumps({"tipo": "grupo", "fase": "grupos", "dados": timesNoGrupo})
     )
     await faseDeGrupos(grupos[groupIndex], timesNoGrupo, [], websocket)
     if groupIndex < len(grupos) - 1:
-        await partidasPorGrupo(teams, groupIndex + 1, websocket)
+        await partidasPorRodada(teams, groupIndex + 1, websocket)
 
 
 async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
@@ -143,18 +143,19 @@ def criaChaveamento(ladoChaveA, ladoChaveB, classificados):
 
 async def mataMata(timesClassificados, indiceFase, websocket):
     vencedores = []
+    faseAtual = fases[indiceFase]
     await websocket.send(
         json.dumps(
             {
                 "tipo": "chaveamento",
-                "fase": fases[indiceFase],
+                "fase": faseAtual,
                 "dados": timesClassificados,
             },
             ensure_ascii=False,
         )
     )
     print("-" * 20)
-    print(f"Chaveamento da {fases[indiceFase]}")
+    print(f"Chaveamento da {faseAtual}")
     print(timesClassificados)
     print("-" * 20)
     for i in range(0, len(timesClassificados), 2):
@@ -164,14 +165,18 @@ async def mataMata(timesClassificados, indiceFase, websocket):
             json.dumps(
                 {
                     "tipo": "partida",
-                    "fase": fases[indiceFase],
-                    "dados": partida,
+                    "fase": faseAtual,
+                    "dados": {
+                        "grupo": faseAtual,
+                        "rodada": 1,
+                        "resultadosDasPartidas": partida,
+                    },
                 },
                 ensure_ascii=False,
             )
         )
 
-        vencedor = defineOVencedorDaPartida(partida)
+        vencedor = await defineOVencedorDaPartida(partida, faseAtual, websocket)
         vencedores.append(vencedor)
 
     if indiceFase < len(fases) - 1:
@@ -185,7 +190,7 @@ async def mataMata(timesClassificados, indiceFase, websocket):
             json.dumps(
                 {
                     "tipo": "campeao",
-                    "fase": fases[indiceFase],
+                    "fase": faseAtual,
                     "dados": vencedor["time"],
                 },
                 ensure_ascii=False,
@@ -193,12 +198,12 @@ async def mataMata(timesClassificados, indiceFase, websocket):
         )
 
 
-def defineOVencedorDaPartida(resultado):
+async def defineOVencedorDaPartida(resultado, fase, websocket):
     vencedor = next((sub for sub in resultado if sub["pontos"] == 3), None)
     empates = list(filter(lambda t: t["pontos"] == 1, resultado))
     if len(empates) > 0:
         print("Vamos para as penalidades máximas! 🥅")
-        vencedor = cobrancasDePenaltis(empates)
+        vencedor = await cobrancasDePenaltis(empates, fase, websocket)
 
     return vencedor
 
@@ -208,19 +213,30 @@ def encontraAdversario(timesDaPartida, time):
     return timeAdiversario
 
 
-def cobrancasDePenaltis(times):
+async def cobrancasDePenaltis(times, fase, websocket):
     batidasConvertidas = {
         times[0]["time"]: 0,
         times[1]["time"]: 0,
     }
     for p in range(0, 5):
-        batePenalti(times, batidasConvertidas)
+        batePenalti(times, batidasConvertidas, fase, websocket)
+
+    await websocket.send(
+        json.dumps(
+            {
+                "tipo": "resultado_cobrancas",
+                "fase": fase,
+                "dados": batidasConvertidas,
+            },
+            ensure_ascii=False,
+        )
+    )
     print(
         f"{times[0]['time']} {'⚽' * batidasConvertidas[times[0]['time']]} - {times[1]['time']} {'⚽' * batidasConvertidas[times[1]['time']]}"
     )
     while batidasConvertidas[times[0]["time"]] == batidasConvertidas[times[1]["time"]]:
         print("Vamos para as cobranças alternadas!!")
-        batePenalti(times, batidasConvertidas)
+        batePenalti(times, batidasConvertidas, fase, websocket)
         print(
             f"{times[0]['time']} {'⚽' * batidasConvertidas[times[0]['time']]} - {times[1]['time']} {'⚽' * batidasConvertidas[times[1]['time']]}"
         )
@@ -233,7 +249,7 @@ def cobrancasDePenaltis(times):
     return vencedor
 
 
-def batePenalti(times, batidasConvertidas):
+def batePenalti(times, batidasConvertidas, fase, websocket):
     for p in times:
         print(f"{p['time']} vai pra cobrança!")
         timeAdiversario = encontraAdversario(times, p["time"])
