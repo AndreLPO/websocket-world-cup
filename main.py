@@ -11,6 +11,16 @@ import websockets
 grupos = ["A", "B", "C", "D", "E", "F", "G", "H"]
 fases = ["Oitavas", "Quartas", "Semi", "Final"]
 classificacaoGeral = []
+partidasRealizadasPorGrupo = {
+    "A": [],
+    "B": [],
+    "C": [],
+    "D": [],
+    "E": [],
+    "F": [],
+    "G": [],
+    "H": [],
+}
 chaveamento = []
 
 
@@ -19,7 +29,7 @@ async def previsaoDaCopa(websocket):
         classificacaoGeral.clear()
         chaveamento.clear()
         todosOsGrupos = json.loads(message)
-        await partidasPorRodada(todosOsGrupos, 0, websocket)
+        await rodadasDaFaseDeGrupos(todosOsGrupos, 1, websocket)
         await websocket.send(
             json.dumps(
                 {
@@ -34,99 +44,25 @@ async def previsaoDaCopa(websocket):
         await mataMata(chaveamento, 0, websocket)
 
 
-async def partidasPorRodada(teams, groupIndex, websocket):
-    timesNoGrupo = list(filter(lambda t: t["grupo"] == grupos[groupIndex], teams))
-    await websocket.send(
-        json.dumps({"tipo": "grupo", "fase": "grupos", "dados": timesNoGrupo})
-    )
-    await faseDeGrupos(grupos[groupIndex], timesNoGrupo, [], websocket)
-    if groupIndex < len(grupos) - 1:
-        await partidasPorRodada(teams, groupIndex + 1, websocket)
+async def rodadasDaFaseDeGrupos(todosOsGrupos, rodada, websocket):
+    await partidasPorGrupo(todosOsGrupos, rodada, 0, websocket)
+    await websocket.send(f"RODADA {rodada}")
+    if rodada < 3:
+        await rodadasDaFaseDeGrupos(todosOsGrupos, rodada + 1, websocket)
 
 
-# [
-#  {
-#   rodada: 1,
-#   partidas: [
-#     {
-#       grupo: A
-#       jogos: [
-#         [Qatar,Ecuador],
-#         [Senegal,Netherlands]
-#       ]
-#     },
-#     {
-#       grupo: B
-#       jogos: [
-#         England,Ecuador],
-#         [Senegal,Netherlands]
-#       ]
-#     },
-#   ]
-#  },
-#  {
-#   rodada: 2,
-#   partidas: [
-#     {
-#       grupo: A
-#       jogos: [
-#         [Qatar,Ecuador],
-#         [Senegal,Netherlands]
-#       ]
-#     },
-#     {
-#       grupo: B
-#       jogos: [
-#         England,Ecuador],
-#         [Senegal,Netherlands]
-#       ]
-#     },
-#   ]
-#  },
-#  {
-#   rodada: 3,
-#   partidas: [
-#     {
-#       grupo: A
-#       jogos: [
-#         [Qatar,Ecuador],
-#         [Senegal,Netherlands]
-#       ]
-#     },
-#     {
-#       grupo: B
-#       jogos: [
-#         England,Ecuador],
-#         [Senegal,Netherlands]
-#       ]
-#     },
-#   ]
-#  },
-#  {
-#   rodada: Oitavas,
-#   partidas: [
-#     {
-#       grupo: Oitavas
-#       jogos: [
-#         [Qatar,Ecuador],
-#         [Senegal,Netherlands]
-#         [Senegal,Netherlands]
-#         [Senegal,Netherlands]
-#         [Senegal,Netherlands]
-#         [Senegal,Netherlands]
-#         [Senegal,Netherlands]
-#         [Senegal,Netherlands]
-#       ]
-#     },
-#   ]
-#  },
-# ]
+async def partidasPorGrupo(times, rodada, indiceDoGrupo, websocket):
+
+    timesNoGrupo = list(filter(lambda t: t["grupo"] == grupos[indiceDoGrupo], times))
+    # await websocket.send(
+    #     json.dumps({"tipo": "grupo", "fase": "grupos", "dados": timesNoGrupo})
+    # )
+    await faseDeGrupos(grupos[indiceDoGrupo], timesNoGrupo, rodada, websocket)
+    if indiceDoGrupo < len(grupos) - 1:
+        await partidasPorGrupo(times, rodada, indiceDoGrupo + 1, websocket)
 
 
-async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
-    rodada = len(partidasJogadas) + 1
-    print(f"Rodada {rodada} do grupo {grupo}")
-    partida = 1
+async def faseDeGrupos(grupo, timesDoGrupo, rodada, websocket):
     resultadoDaRodada = {"grupo": grupo, "rodada": rodada, "resultadosDasPartidas": []}
     timesOrdenadosParaNovaRodada = defineAsPartidasDaRodada(timesDoGrupo, rodada)
     for i in range(0, 4, 2):
@@ -137,7 +73,6 @@ async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
         )
         resultadoDaPartida = jogarPartida(timesOrdenadosParaNovaRodada[x : x + 2])
         resultadoDaRodada["resultadosDasPartidas"].append(resultadoDaPartida)
-        partida += 1
     await websocket.send(
         json.dumps(
             {"tipo": "partida", "fase": "grupos", "dados": resultadoDaRodada},
@@ -145,14 +80,11 @@ async def faseDeGrupos(grupo, timesDoGrupo, partidasJogadas, websocket):
         )
     )
 
-    partidasJogadas.append(resultadoDaRodada["resultadosDasPartidas"])
+    partidasRealizadasPorGrupo[grupo].append(resultadoDaRodada["resultadosDasPartidas"])
 
     if rodada == 3:
-        await classificacaoFinalDaFaseDeGrupos(grupo, partidasJogadas, websocket)
-
-    if rodada < 3:
-        await faseDeGrupos(
-            grupo, timesOrdenadosParaNovaRodada, partidasJogadas, websocket
+        await classificacaoFinalDaFaseDeGrupos(
+            grupo, partidasRealizadasPorGrupo[grupo], websocket
         )
 
 
