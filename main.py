@@ -29,7 +29,7 @@ async def previsaoDaCopa(websocket):
         classificacaoGeral.clear()
         chaveamento.clear()
         todosOsGrupos = json.loads(message)
-        await rodadasDaFaseDeGrupos(todosOsGrupos, 1, websocket)
+        await rodadasDaFaseDeGrupos(todosOsGrupos, 1, [], websocket)
         await websocket.send(
             json.dumps(
                 {
@@ -44,26 +44,47 @@ async def previsaoDaCopa(websocket):
         await mataMata(chaveamento, 0, websocket)
 
 
-async def rodadasDaFaseDeGrupos(todosOsGrupos, rodada, websocket):
-    await partidasPorGrupo(todosOsGrupos, rodada, 0, websocket)
-    await websocket.send(f"RODADA {rodada}")
+async def rodadasDaFaseDeGrupos(todosOsGrupos, rodada, rodadasJogadas, websocket):
+    partidas = await faseDeGrupos(todosOsGrupos, rodada, 0, [], websocket)
+    resultadoDaRodada = {
+        "rodada": rodada,
+        "partidas": partidas,
+    }
+    rodadasJogadas.append(resultadoDaRodada)
     if rodada < 3:
-        await rodadasDaFaseDeGrupos(todosOsGrupos, rodada + 1, websocket)
+        await rodadasDaFaseDeGrupos(
+            todosOsGrupos, rodada + 1, rodadasJogadas, websocket
+        )
+    if rodada == 3:
+        await websocket.send(
+            json.dumps(
+                {
+                    "tipo": "partida",
+                    "fase": "grupos",
+                    "dados": rodadasJogadas,
+                },
+                ensure_ascii=False,
+            )
+        )
 
 
-async def partidasPorGrupo(times, rodada, indiceDoGrupo, websocket):
+async def faseDeGrupos(times, rodada, indiceDoGrupo, partidasPorGrupo, websocket):
 
     timesNoGrupo = list(filter(lambda t: t["grupo"] == grupos[indiceDoGrupo], times))
-    # await websocket.send(
-    #     json.dumps({"tipo": "grupo", "fase": "grupos", "dados": timesNoGrupo})
-    # )
-    await faseDeGrupos(grupos[indiceDoGrupo], timesNoGrupo, rodada, websocket)
+
+    partidas = await jogarPartidasPorGrupo(
+        grupos[indiceDoGrupo], timesNoGrupo, rodada, websocket
+    )
+    partidasPorGrupo.append(partidas)
     if indiceDoGrupo < len(grupos) - 1:
-        await partidasPorGrupo(times, rodada, indiceDoGrupo + 1, websocket)
+        await faseDeGrupos(
+            times, rodada, indiceDoGrupo + 1, partidasPorGrupo, websocket
+        )
+    return partidasPorGrupo
 
 
-async def faseDeGrupos(grupo, timesDoGrupo, rodada, websocket):
-    resultadoDaRodada = {"grupo": grupo, "rodada": rodada, "resultadosDasPartidas": []}
+async def jogarPartidasPorGrupo(grupo, timesDoGrupo, rodada, websocket):
+    resultadoDaRodada = {"grupo": grupo, "resultadosDasPartidas": []}
     timesOrdenadosParaNovaRodada = defineAsPartidasDaRodada(timesDoGrupo, rodada)
     for i in range(0, 4, 2):
         x = i
@@ -73,26 +94,19 @@ async def faseDeGrupos(grupo, timesDoGrupo, rodada, websocket):
         )
         resultadoDaPartida = jogarPartida(timesOrdenadosParaNovaRodada[x : x + 2])
         resultadoDaRodada["resultadosDasPartidas"].append(resultadoDaPartida)
-    await websocket.send(
-        json.dumps(
-            {"tipo": "partida", "fase": "grupos", "dados": resultadoDaRodada},
-            ensure_ascii=False,
-        )
-    )
 
     partidasRealizadasPorGrupo[grupo].append(resultadoDaRodada["resultadosDasPartidas"])
 
     if rodada == 3:
-        await classificacaoFinalDaFaseDeGrupos(
-            grupo, partidasRealizadasPorGrupo[grupo], websocket
-        )
+        await classificacaoFinalDaFaseDeGrupos(grupo, partidasRealizadasPorGrupo[grupo])
+    return resultadoDaRodada
 
 
 def defineChaveParaOrdenacaoDaClassificacao(e):
     return e["pontos"], e["gols"]
 
 
-async def classificacaoFinalDaFaseDeGrupos(grupo, partidas, websocket):
+async def classificacaoFinalDaFaseDeGrupos(grupo, partidas):
     classificacao = []
     for p in partidas:
         for t in p:
@@ -323,7 +337,7 @@ def jogarPartida(timesDaPartida):
 
 
 async def main():
-    port = 8081
+    port = 6000
     ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     localhost_pem = pathlib.Path(__file__).with_name("localhost.pem")
     ssl_context.load_cert_chain(localhost_pem)
