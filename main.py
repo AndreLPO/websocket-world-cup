@@ -59,7 +59,7 @@ async def rodadasDaFaseDeGrupos(todosOsGrupos, rodada, rodadasJogadas, websocket
         await websocket.send(
             json.dumps(
                 {
-                    "tipo": "partida",
+                    "tipo": "partidas",
                     "fase": "grupos",
                     "dados": rodadasJogadas,
                 },
@@ -337,7 +337,7 @@ def jogarPartida(timesDaPartida):
 
 
 async def main():
-    port = 6000
+    port = 8081
     ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     localhost_pem = pathlib.Path(__file__).with_name("localhost.pem")
     ssl_context.load_cert_chain(localhost_pem)
