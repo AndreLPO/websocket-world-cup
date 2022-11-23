@@ -24,10 +24,17 @@ partidasRealizadasPorGrupo = {
 chaveamento = []
 
 
+def limpaResultadosAnteriores():
+    classificacaoGeral.clear()
+    chaveamento.clear()
+    for grupo in grupos:
+        partidasRealizadasPorGrupo[grupo].clear()
+
+
 async def previsaoDaCopa(websocket):
     async for message in websocket:
-        classificacaoGeral.clear()
-        chaveamento.clear()
+        limpaResultadosAnteriores()
+
         todosOsGrupos = json.loads(message)
         await rodadasDaFaseDeGrupos(todosOsGrupos, 1, [], websocket)
         await websocket.send(
