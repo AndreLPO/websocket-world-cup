@@ -1,13 +1,12 @@
 # websocket-world-cup
 
-#### **Projeto integrador 8º semestre**
+#### **Projeto integrador 8º semestre!**
 
 > **Importante!**
 
 Antes de utilizar o projeto, sempre executar `git pull` para pegar a versão mais recente do repositório
 
 # Para rodar o projeto:
-
 
 #### **Pelo Docker**
 
