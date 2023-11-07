@@ -8,6 +8,7 @@ Antes de utilizar o projeto, sempre executar `git pull` para pegar a versão mai
 
 # Para rodar o projeto:
 
+
 #### **Pelo Docker**
 
 > Caso tenha feito alguma alteração do código, rodar ==docker compose down== antes
